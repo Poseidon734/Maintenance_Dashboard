@@ -91,3 +91,50 @@ Representación visual de la degradación del activo, conceptualmente alineada c
   * **Cálculo:** Filtra horas de inactividad cronológicas. Busca desviaciones estadísticas fuera de la varianza normal que indiquen la gestación de fallos crónicos.
 * **Risk Score (Matriz Ponderada):**
   * **Cálculo:** Función interna que combina estadísticamente el ratio de fallos, el tiempo promedio de inactividad y el impacto económico para emitir una calificación integral de riesgo de intervención.
+
+## 6. ALERTAS ACTIVAS
+### Sistema de Alertas Activas (Rule-Based System)
+
+La sección de **Alertas Activas** no es un cálculo aislado, sino un sistema de filtrado basado en reglas lógicas. Funciona alimentándose directamente de los resultados arrojados por los motores de analítica.
+
+Básicamente, el algoritmo itera sobre el listado de equipos actualizados y los hace pasar por un "colador" de condiciones. Si un equipo cumple con los criterios de peligro, se inyecta en la lista de Alertas Activas.
+
+A continuación se detalla cómo el sistema determina qué mostrar:
+
+#### 1. Cruce del Umbral de Riesgo (Risk Score)
+El principal disparador es el motor del **Risk Score**, basado en límites (thresholds) de tolerancia programados.
+* El algoritmo verifica el Score (de 0 a 100) de cada equipo.
+* Si el Score supera un valor crítico (por ejemplo, `RiskScore > 80`), el sistema levanta automáticamente una bandera roja, asumiendo que la combinación de alta frecuencia de fallos y alto impacto económico requiere atención inmediata.
+
+##### 1.1.-Motor de Decisión: Cálculo del Risk Score (0 - 100)
+
+El cálculo del Risk Score es **100% automático**. Como usuario, no es necesario definir, calcular ni estimar este parámetro a mano. La única entrada requerida es el historial de Órdenes de Trabajo (OTs), ya sea mediante registro manual o importando un archivo Excel.
+
+A nivel de código, el motor responsable es la función `calcRiskScore(stats)`, que se ejecuta en segundo plano al actualizar los datos. Funciona bajo el principio de una matriz de ponderación multicriterio (*weighted combination of failure rate, avg downtime, cost*).
+
+Así es como el algoritmo construye el indicador final, asegurando total transparencia:
+
+* **1. Frecuencia de Fallos Relativa (Failure Rate):** El sistema no evalúa los fallos de forma aislada. Primero, filtra las OTs para procesar únicamente las de tipo "Correctivo". Luego, identifica el equipo con la mayor cantidad de fallos históricos globales (`maxFallos`). Finalmente, compara la cantidad de fallos del equipo analizado contra ese "peor escenario" para obtener un índice de criticidad normalizado.
+* **2. Impacto Operativo (Avg Downtime):** Aunque un equipo falle con poca frecuencia, el algoritmo penaliza la gravedad de sus paradas. Calcula cuántas horas en promedio pasa inactivo el activo por cada evento. Si un fallo menor genera un tiempo de inactividad prolongado, el Score aumenta drásticamente.
+* **3. Impacto Económico (Cost):** Incorpora la variable financiera al modelo, evaluando el impacto monetario total asociado al historial de reparaciones y tiempos de parada del activo.
+
+#### La Ponderación Final
+El algoritmo toma estos tres factores normalizados y aplica una **fórmula de suma ponderada** (multiplicando cada factor por un peso específico de importancia). El resultado se escala matemáticamente para entregar un valor estandarizado entre **0 y 100**.
+
+> **Aplicación Práctica:** El sistema lee este Score resultante para alimentar el panel de **Alertas Activas**. Si el número cruza los umbrales de tolerancia, el equipo se marca visualmente en Rojo (Crítico) o Amarillo (Advertencia), convirtiendo cientos de registros de Excel en una lista de prioridades de acción inmediata para el planificador.
+#### 2. Límite de Vida Útil Restante (RUL Crítico)
+El segundo disparador proviene del modelo de **Regresión Lineal**.
+* El sistema lee la cantidad de horas predichas que le quedan al equipo antes de fallar.
+* Si el valor cae por debajo de un margen de seguridad preestablecido (por ejemplo, `RUL < 48 horas`, o menos del 10% de su MTBF histórico), se genera una alerta. Funciona como la luz de reserva de combustible en un tablero.
+
+#### 3. Detección de Anomalías Recientes
+El tercer disparador está conectado al motor estadístico de **Z-Score**.
+* Evalúa la última orden de trabajo o parada del equipo. Si detecta que su duración o comportamiento cae fuera de la varianza normal (desviaciones estándar $\mu \pm 2\sigma$), lo marca inmediatamente.
+* **Significado:** *"No sabemos si el equipo fallará mañana, pero su última parada de mantenimiento fue estadísticamente anormal y debe ser investigada"*.
+
+#### Representación Visual
+Cuando el motor detecta que un equipo cumple una o varias condiciones, crea un objeto de alerta asignándole:
+* **Nivel de severidad:** Si cumple múltiples condiciones (ej. RUL bajo + Anomalía), se clasifica como **Crítico** (Rojo). Si solo se acerca al umbral, se clasifica como **Advertencia** (Naranja/Amarillo).
+* **Mensaje descriptivo:** Extrae el dato clave (ej. *"Motor Principal - RUL crítico: 24h"*).
+
+> **En resumen:** Las Alertas Activas son la consecuencia visual de los motores matemáticos en segundo plano. Es la forma en que el dashboard procesa datos complejos para entregarle al planificador una lista de tareas clara, priorizada e inmediata.
