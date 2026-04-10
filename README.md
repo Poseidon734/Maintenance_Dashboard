@@ -56,6 +56,38 @@ Transición del mantenimiento descriptivo al prescriptivo.
   * Modelo base: $y=\beta_0+\beta_1x_1+\beta_2x_2+\epsilon$
 * **Detección de Anomalías (Anomaly Detection):**
   * **Lógica:** Reconocimiento de patrones en series de tiempo.
+ 
+### Detalle Técnico: Módulo de Machine Learning y Analítica
+
+Este módulo simula el comportamiento de un motor de Machine Learning prescriptivo optimizado para ejecutarse localmente en el navegador, aplicando modelos estadísticos robustos sobre el historial de los activos.
+
+#### 1. Predictor de Fallo por Equipo (Estimación de RUL)
+Responde a la pregunta: *"¿Cuántas horas de operación quedan antes del próximo fallo?"*
+
+* **Mecanismo:** Utiliza un modelo de **Regresión Múltiple** determinístico.
+* **Matemática:** Aplica una ecuación lineal (y = β0 + β1X1 + β2X2 + ε), asignando "pesos" (β) a variables independientes históricas (X), como horas desde el último mantenimiento o el MTBF histórico.
+* **Aplicación:** Proyecta la degradación hacia adelante basándose en la tasa de desgaste específica del equipo evaluado.
+
+#### 2. Detección de Anomalías (Anomaly Detection)
+Levanta alertas tempranas cuando el comportamiento de un equipo se desvía de su norma estadística, ideal para Mantenimiento Basado en Condición (CBM).
+
+* **Mecanismo:** Actúa como una carta de control dinámico sobre la serie de tiempo de las paradas o frecuencias de fallo.
+* **Matemática:** Utiliza el método de **Z-Score**. Calcula la media (μ) y la desviación estándar (σ) del historial. Si un nuevo evento cae fuera del rango de varianza normal (por ejemplo, μ ± 2σ), el algoritmo lo clasifica como una anomalía.
+* **Aplicación:** Identifica picos o patrones ocultos de fallos crónicos que pasarían desapercibidos al observar simples promedios.
+
+#### 3. Ranking de Riesgo por Equipo (Risk Score)
+Es el motor prescriptivo que prioriza la toma de decisiones, indicando exactamente qué equipo requiere intervención inmediata.
+
+* **Mecanismo:** Modelo de **Matriz de Ponderación Multicriterio**.
+* **Matemática:** Normaliza variables dispares en una escala común (0 a 100) y aplica una ecuación de riesgo: `Riesgo = (w1 × Frecuencia) + (w2 × ImpactoMTTR) + (w3 × GravedadModoFallo)`, donde *w* representa los hiperparámetros que definen el peso de cada criterio.
+* **Aplicación:** Convierte métricas complejas en un único "Score" de criticidad. El activo con el Score más cercano a 100 es identificado visualmente como el cuello de botella actual de la confiabilidad de la planta.
+
+#### 4. Curva RUL (Remaining Useful Life)
+Representación visual de la degradación del activo, conceptualmente alineada con la clásica **Curva P-F** (Punto Potencial a Punto Funcional de fallo).
+
+* **Mecanismo:** Grafica la trayectoria de la degradación desde el estado de salud actual (100%) hasta la falla funcional (0%), consumiendo el resultado del Predictor de Fallo.
+* **Matemática:** Dependiendo del modo de fallo, traza una función de decaimiento (generalmente exponencial) donde la pendiente se vuelve más pronunciada a medida que se acerca al límite predicho, simulando la aceleración progresiva del desgaste.
+* **Aplicación:** Permite visualizar gráficamente la "ventana de oportunidad" para realizar el mantenimiento preventivo, justificando con datos en qué punto de la curva se encuentra el equipo hoy. 
   * **Cálculo:** Filtra horas de inactividad cronológicas. Busca desviaciones estadísticas fuera de la varianza normal que indiquen la gestación de fallos crónicos.
 * **Risk Score (Matriz Ponderada):**
   * **Cálculo:** Función interna que combina estadísticamente el ratio de fallos, el tiempo promedio de inactividad y el impacto económico para emitir una calificación integral de riesgo de intervención.
