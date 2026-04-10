@@ -2,6 +2,8 @@
 
 Este dashboard es una herramienta interactiva para el cálculo, visualización y análisis de métricas de confiabilidad industrial. El objetivo es eliminar las "cajas negras" y proporcionar total transparencia matemática sobre cómo se evalúa la salud de los activos.
 
+🚀 **[Acceder a IndustrialIQ Dashboard](https://poseidon734.github.io/Maintenance_Dashboard/)**
+
 A continuación, se detalla la lógica de los motores de cálculo integrados en el sistema.
 
 ## 1. Indicadores Core (KPIs Básicos)
