@@ -4,6 +4,9 @@ Este dashboard es una herramienta interactiva para el cálculo, visualización y
 
 🚀 **[Acceder a IndustrialIQ Dashboard](https://poseidon734.github.io/Maintenance_Dashboard/)**
 
+<img width="1717" height="879" alt="image" src="https://github.com/user-attachments/assets/6214b09f-a6dd-428e-a32b-c024a97e87ac" />
+
+
 A continuación, se detalla la lógica de los motores de cálculo integrados en el sistema.
 
 ## 1. Indicadores Core (KPIs Básicos)
